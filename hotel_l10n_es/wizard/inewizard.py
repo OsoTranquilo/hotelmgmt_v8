@@ -55,7 +55,10 @@ class Wizard(models.TransientModel):
         cabezera = ET.SubElement(encuesta, "CABEZERA")
 
         ET.SubElement(cabezera, "field1", name="blah").text = "some value1"
-        ET.SubElement(cabezera, "field2", name="asdfasd").text = "some vlaue2"
+        ET.SubElement(cabezera, "field2", name="asdfasd").text = "some valaue2"
+        dia = ET.SubElement(cabezera,"DIA")
+        ET.SubElement(dia, "field3").text = "some valaue3"
+        ET.SubElement(dia, "field4").text = "valaue4"
 
         tree = ET.ElementTree(encuesta)
 
@@ -63,12 +66,6 @@ class Wizard(models.TransientModel):
         xmlstr += ET.tostring(encuesta)            
         file=base64.encodestring( xmlstr )
         return self.write({
-             'txt_filename': 'ine_'+str(get_year())+'_'+str(get_month()) +'.'+ 'xml',
+             'txt_filename': 'INE_'+str(get_month())+'_'+str(get_year()) +'.'+ 'xml',
              'txt_binary': base64.encodestring(xmlstr)
-             })           
-
-
-
-        #tree.write(get_year()+"filename.xml") 
-
-           
+             })
