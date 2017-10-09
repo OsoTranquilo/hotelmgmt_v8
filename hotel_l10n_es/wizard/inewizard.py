@@ -3,6 +3,7 @@
 from openerp import models, fields, api
 import base64  
 import datetime
+import xml.etree.cElementTree as ET
 
 import logging
 _logger=logging.getLogger(__name__)
@@ -20,15 +21,13 @@ def get_year():
 def get_month():
     now = datetime.datetime.now()
     month = int(now.month)-1
-    if month = 0:
+    if month <= 0:
         month = 12
     return month
 
 class Wizard(models.TransientModel):
     _name = 'ine.wizard'
 
-    download_date = fields.Date('Date to generate the file',required=True)
-    download_num = fields.Char('Correlative number',required=True,size=3,help='Number provided by the police')
     txt_filename = fields.Char()
     txt_binary = fields.Binary()
     ine_month = fields.Selection([(1, 'January'), (2, 'February'), (3, 'March'), (4, 'April'),
@@ -38,11 +37,38 @@ class Wizard(models.TransientModel):
     ine_year = fields.Selection(get_years(), default=get_year(), string='Year')
 
 
+    # @api.one
+    # def generate_file(self):
+    #     content = 'Hola mundo'
+      
+    #     return self.write({
+    #         'txt_filename': 'compaine' +'.'+ 'txt',
+    #         'txt_binary': base64.encodestring(content)
+    #         }) 
+
+
+
     @api.one
     def generate_file(self):
-        content = 'Hola mundo'
-      
+    #def generate_file(self, cr, uid, ids, context=None):
+        encuesta = ET.Element("ENCUESTA")
+        cabezera = ET.SubElement(encuesta, "CABEZERA")
+
+        ET.SubElement(cabezera, "field1", name="blah").text = "some value1"
+        ET.SubElement(cabezera, "field2", name="asdfasd").text = "some vlaue2"
+
+        tree = ET.ElementTree(encuesta)
+
+        xmlstr = '<?xml version="1.0" encoding="ISO-8859-1"?>'
+        xmlstr += ET.tostring(encuesta)            
+        file=base64.encodestring( xmlstr )
         return self.write({
-            'txt_filename': 'compaine' +'.'+ self.download_num,
-            'txt_binary': base64.encodestring(content)
-            })      
+             'txt_filename': 'ine_'+str(get_year())+'_'+str(get_month()) +'.'+ 'xml',
+             'txt_binary': base64.encodestring(xmlstr)
+             })           
+
+
+
+        #tree.write(get_year()+"filename.xml") 
+
+           
