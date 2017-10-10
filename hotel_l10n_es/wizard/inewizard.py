@@ -56,9 +56,29 @@ class Wizard(models.TransientModel):
         ET.SubElement(cabezera,"RAZON_SOCIAL").text = compan.name
         ET.SubElement(cabezera,"NOMBRE_ESTABLECIMIENTO").text = compan.property_name
         ET.SubElement(cabezera,"CIF_NIF").text = compan.vat
+        ET.SubElement(cabezera,"NUMERO_REGISTRO").text = compan.tourism
+        ET.SubElement(cabezera,"DIRECCION").text = compan.street
+        ET.SubElement(cabezera,"CODIGO_POSTAL").text = compan.zip
+        ET.SubElement(cabezera,"LOCALIDAD").text = compan.city
+        ET.SubElement(cabezera,"MUNICIPIO").text = compan.city
+        ET.SubElement(cabezera,"PROVINCIA").text = compan.state_id.display_name
+        ET.SubElement(cabezera,"TELEFONO_1").text = compan.phone
+        ET.SubElement(cabezera,"TIPO").text = compan.category_id.name
+        ET.SubElement(cabezera,"CATEGORIA").text = compan.vat
+        ET.SubElement(cabezera,"HABITACIONES").text = str(compan.rooms)
+        ET.SubElement(cabezera,"PLAZAS_DISPONIBLES_SIN_SUPLETORIAS").text = str(compan.seats)
+        ET.SubElement(cabezera,"URL").text = compan.website
 
-        #ET.SubElement(cabezera,"WEB").text = compan.website
+        alojamiento = ET.SubElement(encuesta, "ALOJAMIENTO")
+        #Bucle de RESIDENCIA
 
+        habitaciones = ET.SubElement(encuesta, "HABITACIONES")
+        #Bucle de HABITACIONES_MOVIMIENTO
+
+        personal = ET.SubElement(encuesta, "PERSONAL_OCUPADO")
+        ET.SubElement(personal,"PERSONAL_NO_REMUNERADO").text = '0'
+        ET.SubElement(personal,"PERSONAL_REMUNERADO_FIJO").text = str(compan.permanentstaff)
+        ET.SubElement(personal,"PERSONAL_REMUNERADO_EVENTUAL").text = str(compan.eventualstaff)
 
         tree = ET.ElementTree(encuesta)
 
@@ -66,6 +86,6 @@ class Wizard(models.TransientModel):
         xmlstr += ET.tostring(encuesta)            
         file=base64.encodestring( xmlstr )
         return self.write({
-             'txt_filename': 'INE_'+str(get_month())+'_'+str(get_year()) +'.'+ 'xml',
+             'txt_filename': 'INE_'+str(self.ine_month)+'_'+str(self.ine_year) +'.'+ 'xml',
              'txt_binary': base64.encodestring(xmlstr)
              })
