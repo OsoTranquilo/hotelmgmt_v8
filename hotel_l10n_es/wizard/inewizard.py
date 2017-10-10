@@ -3,6 +3,7 @@
 from openerp import models, fields, api
 import base64  
 import datetime
+import calendar
 import xml.etree.cElementTree as ET
 
 import logging
@@ -36,29 +37,28 @@ class Wizard(models.TransientModel):
                           string='Month', default=get_month())
     ine_year = fields.Selection(get_years(), default=get_year(), string='Year')
 
-
-    # @api.one
-    # def generate_file(self):
-    #     content = 'Hola mundo'
-      
-    #     return self.write({
-    #         'txt_filename': 'compaine' +'.'+ 'txt',
-    #         'txt_binary': base64.encodestring(content)
-    #         }) 
-
-
-
     @api.one
     def generate_file(self):
-    #def generate_file(self, cr, uid, ids, context=None):
+        compan = self.env.user.company_id
+        #compan.rooms
+        #compan.seats
+
         encuesta = ET.Element("ENCUESTA")
         cabezera = ET.SubElement(encuesta, "CABEZERA")
 
-        ET.SubElement(cabezera, "field1", name="blah").text = "some value1"
-        ET.SubElement(cabezera, "field2", name="asdfasd").text = "some valaue2"
-        dia = ET.SubElement(cabezera,"DIA")
-        ET.SubElement(dia, "field3").text = "some valaue3"
-        ET.SubElement(dia, "field4").text = "valaue4"
+        fecha = ET.SubElement(cabezera,"FECHA_REFERENCIA")
+        ET.SubElement(fecha, "MES").text = '{:02d}'.format(self.ine_month)
+        ET.SubElement(fecha, "ANYO").text = str(self.ine_year)
+
+        month_end_date=datetime.datetime(self.ine_year,self.ine_month,1) + datetime.timedelta(days=calendar.monthrange(self.ine_year,self.ine_month)[1] - 1)
+        ET.SubElement(cabezera,"DIAS_ABIERTO_MES_REFERENCIA").text = str(month_end_date.day)
+
+        ET.SubElement(cabezera,"RAZON_SOCIAL").text = compan.name
+        ET.SubElement(cabezera,"NOMBRE_ESTABLECIMIENTO").text = compan.property_name
+        ET.SubElement(cabezera,"CIF_NIF").text = compan.vat
+
+        #ET.SubElement(cabezera,"WEB").text = compan.website
+
 
         tree = ET.ElementTree(encuesta)
 
