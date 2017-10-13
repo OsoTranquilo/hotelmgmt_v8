@@ -39,6 +39,11 @@ class Wizard(models.TransientModel):
 
     @api.one
     def generate_file(self):
+        month_first_date=datetime.datetime(self.ine_year,self.ine_month,1)
+        month_end_date=month_first_date + datetime.timedelta(days=calendar.monthrange(self.ine_year,self.ine_month)[1] - 1)
+
+        lines = self.env['cardex'].search([('enter_date','>',month_first_date)])
+
         compan = self.env.user.company_id
         #compan.rooms
         #compan.seats
@@ -71,6 +76,14 @@ class Wizard(models.TransientModel):
 
         alojamiento = ET.SubElement(encuesta, "ALOJAMIENTO")
         #Bucle de RESIDENCIA
+        for linea in lines:
+            alojamiento = ET.SubElement(encuesta, "RESIDENCIA")
+            ET.SubElement(alojamiento,"V0").text = str(linea.enter_date)
+            ET.SubElement(alojamiento,"V1").text = str(linea.exit_date)
+            ET.SubElement(alojamiento,"V2").text = str(linea.reservation_id.state)
+            ET.SubElement(alojamiento,"V3").text = str(linea.partner_id.documenttype)
+            ET.SubElement(alojamiento,"V4").text = str(linea.partner_id.code_ine.name)
+            ET.SubElement(alojamiento,"V5").text = str(linea.reservation_id.room_type_id.code_type)
 
         habitaciones = ET.SubElement(encuesta, "HABITACIONES")
         #Bucle de HABITACIONES_MOVIMIENTO
@@ -79,6 +92,14 @@ class Wizard(models.TransientModel):
         ET.SubElement(personal,"PERSONAL_NO_REMUNERADO").text = '0'
         ET.SubElement(personal,"PERSONAL_REMUNERADO_FIJO").text = str(compan.permanentstaff)
         ET.SubElement(personal,"PERSONAL_REMUNERADO_EVENTUAL").text = str(compan.eventualstaff)
+
+
+        seguimiento = ET.SubElement(encuesta, "seguimiento_variables")
+        ET.SubElement(seguimiento,"Fecha").text = str(month_end_date)
+        ET.SubElement(seguimiento,"Fecha").text = str(month_first_date)
+
+
+
 
         tree = ET.ElementTree(encuesta)
 
